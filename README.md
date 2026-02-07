@@ -2,11 +2,12 @@
 
 ## Project info
 
-**URL**: https://pathfinder-visa-care.lovable.app
+**Preview URL**: https://pathfinder-visa-care.lovable.app
 
 
-https://lovable.dev/projects/1a154c4b-6a60-434e-8e93-a751f4398726?magic_link=mc_57f9308d-b572-465d-8804-b54088d94936 
+**Building Lovable** https://lovable.dev/projects/1a154c4b-6a60-434e-8e93-a751f4398726?magic_link=mc_57f9308d-b572-465d-8804-b54088d94936 
 
+**Vercel Deployment** https://visa-compass.vercel.app/
 
 ## How can I edit this code?
 
