@@ -1,18 +1,35 @@
-import { Link, useLocation } from 'react-router-dom';
-import { Shield, Menu, X } from 'lucide-react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Shield, Menu, X, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
+import { authClient } from '@/auth';
 
 export function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
   const isLanding = location.pathname === '/';
+  const session = authClient.useSession();
+  const isAuthenticated = !session.isPending && !!session.data;
 
   const navLinks = [
     { href: '/dashboard', label: 'Dashboard' },
     { href: '/travel-check', label: 'Travel Check' },
   ];
+
+  const handleBeginClick = () => {
+    if (isAuthenticated) {
+      navigate('/app');
+    } else {
+      navigate('/auth');
+    }
+  };
+
+  const handleLogout = async () => {
+    await authClient.signOut();
+    navigate('/');
+  };
 
   return (
     <header className={cn(
@@ -53,9 +70,37 @@ export function Header() {
               {link.label}
             </Link>
           ))}
-          <Button variant={isLanding ? "heroOutline" : "accentSolid"} size="sm" asChild>
-            <Link to="/onboarding">Get Started</Link>
-          </Button>
+          {isAuthenticated ? (
+            <>
+              <Button
+                variant={isLanding ? "heroOutline" : "accentSolid"}
+                size="sm"
+                onClick={() => navigate('/app')}
+              >
+                Dashboard
+              </Button>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={handleLogout}
+                className={cn(
+                  "gap-2",
+                  isLanding ? "text-primary-foreground hover:text-primary-foreground/80" : ""
+                )}
+              >
+                <LogOut className="h-4 w-4" />
+                Logout
+              </Button>
+            </>
+          ) : (
+            <Button
+              variant={isLanding ? "heroOutline" : "accentSolid"}
+              size="sm"
+              onClick={handleBeginClick}
+            >
+              Begin
+            </Button>
+          )}
         </nav>
 
         {/* Mobile Menu Button */}
@@ -91,11 +136,43 @@ export function Header() {
                 {link.label}
               </Link>
             ))}
-            <Button variant={isLanding ? "hero" : "accentSolid"} asChild>
-              <Link to="/onboarding" onClick={() => setMobileMenuOpen(false)}>
-                Get Started
-              </Link>
-            </Button>
+            {isAuthenticated ? (
+              <>
+                <Button
+                  variant={isLanding ? "hero" : "accentSolid"}
+                  onClick={() => {
+                    navigate('/app');
+                    setMobileMenuOpen(false);
+                  }}
+                >
+                  Dashboard
+                </Button>
+                <Button
+                  variant="ghost"
+                  onClick={() => {
+                    handleLogout();
+                    setMobileMenuOpen(false);
+                  }}
+                  className={cn(
+                    "gap-2 justify-start",
+                    isLanding ? "text-primary-foreground hover:text-primary-foreground/80" : ""
+                  )}
+                >
+                  <LogOut className="h-4 w-4" />
+                  Logout
+                </Button>
+              </>
+            ) : (
+              <Button
+                variant={isLanding ? "hero" : "accentSolid"}
+                onClick={() => {
+                  handleBeginClick();
+                  setMobileMenuOpen(false);
+                }}
+              >
+                Begin
+              </Button>
+            )}
           </nav>
         </div>
       )}
