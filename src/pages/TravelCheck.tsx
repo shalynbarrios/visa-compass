@@ -4,13 +4,13 @@ import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { TravelResponseCard } from '@/components/travel/TravelResponseCard';
 import { TravelResponse } from '@/lib/mockData';
-import { Plane, Send, Loader2, User, Bot } from 'lucide-react';
+import { MessageSquare, Send, Loader2, User, Bot } from 'lucide-react';
 
 const exampleQuestions = [
-  'I would like to travel to Russia, can I?',
-  'Is it safe to visit Canada for a weekend?',
   'Can I travel to my home country on F-1 OPT?',
-  'What documents do I need for travel to Mexico?',
+  'What happens if my H-1B transfer is pending?',
+  'Do I need to update my I-20 before traveling?',
+  'Can I work part-time on an F-1 visa?',
 ];
 
 const TravelCheck = () => {
@@ -46,14 +46,14 @@ const TravelCheck = () => {
           {/* Header */}
           <div className="mb-6 text-center">
             <div className="mb-3 inline-flex items-center justify-center gap-2 rounded-full bg-accent/10 px-4 py-2">
-              <Plane className="h-5 w-5 text-accent" />
-              <span className="font-medium text-accent">Travel Check AI</span>
+              <MessageSquare className="h-5 w-5 text-accent" />
+              <span className="font-medium text-accent">Immigration Advisor</span>
             </div>
             <h1 className="mb-1 font-serif text-2xl font-bold text-foreground md:text-3xl">
-              Check Your Travel Risks
+              Ask Your Immigration Questions
             </h1>
             <p className="text-sm text-muted-foreground">
-              Ask about any travel destination and get personalized guidance based on your immigration status.
+              Get personalized guidance on travel, visa status, work authorization, and more.
             </p>
           </div>
 
@@ -62,7 +62,7 @@ const TravelCheck = () => {
             {messages.length === 0 && (
               <div className="flex flex-col items-center justify-center py-12">
                 <Bot className="mb-4 h-12 w-12 text-muted-foreground/40" />
-                <p className="mb-6 text-muted-foreground">Ask me about your travel plans</p>
+                <p className="mb-6 text-muted-foreground">Ask me anything about your immigration situation</p>
                 <div className="flex flex-wrap justify-center gap-2">
                   {exampleQuestions.map((question) => (
                     <button
@@ -121,7 +121,7 @@ const TravelCheck = () => {
                         return (
                           <div key={i} className="my-4 flex items-center gap-3 rounded-xl border bg-card p-6 shadow-card">
                             <Loader2 className="h-5 w-5 animate-spin text-accent" />
-                            <span className="text-sm text-muted-foreground">Generating travel assessment...</span>
+                            <span className="text-sm text-muted-foreground">Generating assessment...</span>
                           </div>
                         );
                       }
@@ -165,7 +165,7 @@ const TravelCheck = () => {
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyDown={handleKeyDown}
-                placeholder="Ask about your travel plans..."
+                placeholder="Ask about visas, travel, work authorization..."
                 rows={1}
                 className="flex-1 resize-none rounded-xl border bg-card px-4 py-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-accent"
               />

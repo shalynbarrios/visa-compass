@@ -75,8 +75,8 @@ export function FeaturesSection() {
     },
     {
       icon: Globe,
-      title: 'Travel Check AI',
-      description: 'Ask questions about travel risks and get personalized guidance based on your status.',
+      title: 'Immigration Advisor',
+      description: 'Ask questions about travel, visas, work authorization, and get personalized guidance.',
     },
     {
       icon: Shield,

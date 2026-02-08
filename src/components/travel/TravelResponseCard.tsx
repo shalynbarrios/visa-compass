@@ -62,7 +62,7 @@ export function TravelResponseCard({ response }: TravelResponseCardProps) {
               {config.label}
             </Badge>
             <h3 className="font-serif text-xl font-semibold text-foreground">
-              Travel to {response.destination}
+              Assessment: {response.destination}
             </h3>
           </div>
         </div>
