@@ -12,7 +12,7 @@ export function Footer() {
                 <Shield className="h-5 w-5 text-primary-foreground" />
               </div>
               <span className="font-serif text-lg font-semibold text-foreground">
-                SourceControl
+                Hawkeye
               </span>
             </div>
             <p className="text-sm text-muted-foreground">
@@ -49,7 +49,7 @@ export function Footer() {
         </div>
 
         <div className="mt-8 border-t pt-8 text-center text-sm text-muted-foreground">
-          <p>© {new Date().getFullYear()} SourceControl Visas. Not legal advice.</p>
+          <p>© {new Date().getFullYear()} Hawkeye Visas. Not legal advice.</p>
         </div>
       </div>
     </footer>

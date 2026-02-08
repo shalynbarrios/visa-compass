@@ -51,7 +51,7 @@ export function Header() {
             "font-serif text-lg font-semibold",
             isLanding ? "text-primary-foreground" : "text-foreground"
           )}>
-            SourceControl
+            Hawkeye
           </span>
         </Link>
 
