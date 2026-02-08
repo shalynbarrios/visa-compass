@@ -15,7 +15,7 @@ export function Header() {
 
   const navLinks = [
     { href: '/dashboard', label: 'Dashboard' },
-    { href: '/travel-check', label: 'Travel Check' },
+    { href: '/advisor', label: 'Advisor' },
   ];
 
   const handleBeginClick = () => {

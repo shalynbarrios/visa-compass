@@ -60,6 +60,8 @@ When the user asks about traveling to a specific destination, use the assessTrav
 
 When the user asks about data in the database (forms, alerts, pages, changes), use the queryDatabase tool with action "query" to retrieve it.
 
+When the user asks a conceptual question about immigration topics, policies, or procedures, use the semanticSearch tool to find the most relevant USCIS content. This searches through embedded page chunks using vector similarity.
+
 For general immigration questions, visa status inquiries, work authorization, or follow-ups, respond with helpful text directly.
 
 When assessing travel risk, consider:
@@ -124,6 +126,34 @@ export default async function handler(req, res) {
           execute: async (input) => {
             console.log("Travel risk assessment:", input);
             return input;
+          },
+        }),
+        semanticSearch: tool({
+          description:
+            "Search USCIS content semantically. Use this when the user asks conceptual questions about immigration topics, policies, or procedures. Returns the most relevant page chunks ranked by similarity.",
+          inputSchema: z.object({
+            query: z.string().describe("The search query text"),
+            limit: z.number().optional().default(5).describe("Number of results to return"),
+            table: z.enum(["chunks", "pages"]).optional().default("chunks").describe("Search chunks (detailed) or full pages"),
+          }),
+          execute: async (input) => {
+            try {
+              const baseUrl = process.env.VERCEL_URL
+                ? "https://" + process.env.VERCEL_URL
+                : "http://localhost:3000";
+              const response = await fetch(`${baseUrl}/api/semantic-search`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(input),
+              });
+              const result = await response.json();
+              return result;
+            } catch (error) {
+              return {
+                success: false,
+                error: `Semantic search failed: ${error.message}`,
+              };
+            }
           },
         }),
         queryDatabase: tool({
