@@ -82,7 +82,8 @@ export default async function handler(req, res) {
   }
 
   try {
-    const { messages } = req.body;
+    const { messages, userProfile } = req.body;
+    console.log("[chat] userProfile received:", userProfile ? JSON.stringify(userProfile) : "NONE");
 
     if (!messages || !Array.isArray(messages)) {
       return res
@@ -114,9 +115,31 @@ export default async function handler(req, res) {
         };
       });
 
+    let systemPrompt = SYSTEM_PROMPT;
+    if (userProfile) {
+      const profileLines = [
+        `\n\n--- USER PROFILE (from onboarding) ---`,
+        `Citizenship: ${userProfile.citizenship}`,
+        `Visa Status: ${userProfile.visaStatus}`,
+        `Affiliation Type: ${userProfile.affiliationType}`,
+        `Affiliation: ${userProfile.affiliation}`,
+      ];
+      if (userProfile.hasTravelPlans) {
+        profileLines.push(`Has Travel Plans: Yes`);
+        if (userProfile.travelDestination) profileLines.push(`Travel Destination: ${userProfile.travelDestination}`);
+        if (userProfile.travelDepartureDate) profileLines.push(`Departure Date: ${userProfile.travelDepartureDate}`);
+        if (userProfile.travelReturnDate) profileLines.push(`Return Date: ${userProfile.travelReturnDate}`);
+      }
+      profileLines.push(`---`);
+      profileLines.push(`Use this profile to personalize your responses. You already know the user's visa type, citizenship, and affiliation — reference them naturally without asking again.`);
+      systemPrompt += profileLines.join('\n');
+    }
+    console.log("[chat] system prompt includes profile:", systemPrompt.includes('USER PROFILE'));
+    console.log("[chat] message count:", formattedMessages.length);
+
     const result = streamText({
       model: anthropic("claude-haiku-4-5"),
-      system: SYSTEM_PROMPT,
+      system: systemPrompt,
       messages: formattedMessages,
       tools: {
         assessTravelRisk: tool({
@@ -124,7 +147,7 @@ export default async function handler(req, res) {
             "Present a structured travel risk assessment card to the user. Use this when the user asks about traveling to a specific destination.",
           inputSchema: travelResponseSchema,
           execute: async (input) => {
-            console.log("Travel risk assessment:", input);
+            console.log("[assessTravelRisk] Called with destination:", input.destination, "riskLevel:", input.riskLevel);
             return input;
           },
         }),
@@ -137,6 +160,7 @@ export default async function handler(req, res) {
             table: z.enum(["chunks", "pages"]).optional().default("chunks").describe("Search chunks (detailed) or full pages"),
           }),
           execute: async (input) => {
+            console.log("[semanticSearch] Called with:", JSON.stringify(input));
             try {
               const baseUrl = process.env.VERCEL_URL
                 ? "https://" + process.env.VERCEL_URL
@@ -147,8 +171,10 @@ export default async function handler(req, res) {
                 body: JSON.stringify(input),
               });
               const result = await response.json();
+              console.log("[semanticSearch] Response status:", response.status, "Results count:", result.results?.length ?? 0, "Success:", result.success);
               return result;
             } catch (error) {
+              console.error("[semanticSearch] Error:", error.message);
               return {
                 success: false,
                 error: `Semantic search failed: ${error.message}`,
@@ -161,9 +187,13 @@ export default async function handler(req, res) {
             "Query the Neon PostgreSQL database for schema, table info, or execute SELECT queries.",
           inputSchema: dbQueryInputSchema,
           execute: async (input) => {
+            console.log("[queryDatabase] Called with:", JSON.stringify(input));
             try {
+              const baseUrl = process.env.VERCEL_URL
+                ? "https://" + process.env.VERCEL_URL
+                : "http://localhost:3000";
               const response = await fetch(
-                `${process.env.VERCEL_URL ? "https://" + process.env.VERCEL_URL : "http://localhost:3000"}/api/db-query`,
+                `${baseUrl}/api/db-query`,
                 {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },
@@ -171,8 +201,10 @@ export default async function handler(req, res) {
                 }
               );
               const result = await response.json();
+              console.log("[queryDatabase] Response status:", response.status, "Result:", JSON.stringify(result).slice(0, 500));
               return result;
             } catch (error) {
+              console.error("[queryDatabase] Error:", error.message);
               return {
                 success: false,
                 error: `Failed to query database: ${error.message}`,

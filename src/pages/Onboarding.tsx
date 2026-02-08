@@ -10,6 +10,7 @@ import { Progress } from '@/components/ui/progress';
 import { ArrowLeft, ArrowRight, CheckCircle } from 'lucide-react';
 import { countries, visaStatuses } from '@/lib/mockData';
 import { saveOnboardingData, type OnboardingData } from '@/lib/api';
+import { useUserProfile } from '@/contexts/UserProfileContext';
 
 const steps = [
   { id: 1, title: 'Citizenship', description: 'Where are you from?' },
@@ -21,6 +22,7 @@ const steps = [
 
 const Onboarding = () => {
   const navigate = useNavigate();
+  const { setProfile } = useUserProfile();
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formData, setFormData] = useState<OnboardingData>({
@@ -55,6 +57,7 @@ const Onboarding = () => {
     setIsSubmitting(true);
     try {
       await saveOnboardingData(formData);
+      setProfile(formData);
       navigate('/dashboard');
     } catch (error) {
       console.error('Error saving onboarding data:', error);

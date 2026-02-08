@@ -3,12 +3,13 @@ import { Layout } from '@/components/layout/Layout';
 import { StatusCard } from '@/components/dashboard/StatusCard';
 import { UpdatesFeed, ExplanationPanel } from '@/components/dashboard/UpdatesFeed';
 import { SourcesDrawer } from '@/components/dashboard/SourcesDrawer';
-import { fetchUserProfile, fetchUpdates } from '@/lib/api';
-import { UserProfile, PolicyUpdate } from '@/lib/mockData';
+import { fetchUpdates } from '@/lib/api';
+import { PolicyUpdate } from '@/lib/mockData';
 import { Skeleton } from '@/components/ui/skeleton';
+import { useUserProfile } from '@/contexts/UserProfileContext';
 
 const Dashboard = () => {
-  const [profile, setProfile] = useState<UserProfile | null>(null);
+  const { profile: onboardingProfile } = useUserProfile();
   const [updates, setUpdates] = useState<PolicyUpdate[]>([]);
   const [selectedUpdate, setSelectedUpdate] = useState<PolicyUpdate | null>(null);
   const [sourcesOpen, setSourcesOpen] = useState(false);
@@ -17,11 +18,7 @@ const Dashboard = () => {
   useEffect(() => {
     async function loadData() {
       try {
-        const [profileData, updatesData] = await Promise.all([
-          fetchUserProfile(),
-          fetchUpdates(),
-        ]);
-        setProfile(profileData);
+        const updatesData = await fetchUpdates();
         setUpdates(updatesData);
         if (updatesData.length > 0) {
           setSelectedUpdate(updatesData[0]);
@@ -60,7 +57,7 @@ const Dashboard = () => {
           {/* Header */}
           <div className="mb-8">
             <h1 className="font-serif text-3xl font-bold text-foreground">
-              Welcome back, {profile?.name.split(' ')[0]}
+              Welcome{onboardingProfile ? ` back` : ''}
             </h1>
             <p className="text-muted-foreground">
               Here's what's happening with your immigration status.
@@ -71,7 +68,7 @@ const Dashboard = () => {
           <div className="grid gap-6 lg:grid-cols-3">
             {/* Status Card */}
             <div className="lg:col-span-1">
-              {profile && <StatusCard profile={profile} />}
+              {onboardingProfile && <StatusCard profile={onboardingProfile} />}
             </div>
 
             {/* Updates Feed */}

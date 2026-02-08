@@ -1,10 +1,12 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { useChat } from '@ai-sdk/react';
+import { DefaultChatTransport } from 'ai';
 import { Layout } from '@/components/layout/Layout';
 import { Button } from '@/components/ui/button';
 import { TravelResponseCard } from '@/components/travel/TravelResponseCard';
 import { TravelResponse } from '@/lib/mockData';
 import { MessageSquare, Send, Loader2, User, Bot } from 'lucide-react';
+import { useUserProfile } from '@/contexts/UserProfileContext';
 
 const exampleQuestions = [
   'Can I travel to my home country on F-1 OPT?',
@@ -14,9 +16,15 @@ const exampleQuestions = [
 ];
 
 const TravelCheck = () => {
-  const { messages, sendMessage, status, error } = useChat({
-    api: '/api/chat',
-  });
+  const { profile } = useUserProfile();
+  const transport = useMemo(
+    () => new DefaultChatTransport({
+      api: '/api/chat',
+      body: profile ? { userProfile: profile } : undefined,
+    }),
+    [profile]
+  );
+  const { messages, sendMessage, status, error } = useChat({ transport });
   const [input, setInput] = useState('');
 
   const isLoading = status === 'submitted' || status === 'streaming';
@@ -55,6 +63,15 @@ const TravelCheck = () => {
             <p className="text-sm text-muted-foreground">
               Get personalized guidance on travel, visa status, work authorization, and more.
             </p>
+            {profile && (
+              <div className="mt-3 inline-flex items-center gap-2 rounded-full border bg-card px-3 py-1 text-xs text-muted-foreground">
+                <span>{profile.visaStatus}</span>
+                <span className="text-border">|</span>
+                <span>{profile.citizenship}</span>
+                <span className="text-border">|</span>
+                <span>{profile.affiliation}</span>
+              </div>
+            )}
           </div>
 
           {/* Messages area */}
@@ -112,12 +129,18 @@ const TravelCheck = () => {
                     );
                   }
 
-                  // Tool parts render as TravelResponseCard
+                  // Tool parts render based on tool type
                   if (part.type === 'dynamic-tool') {
-                    const toolPart = part as { toolName: string; state: string; input?: unknown };
+                    const toolPart = part as {
+                      toolName: string;
+                      state: string;
+                      input?: unknown;
+                      output?: unknown;
+                    };
 
+                    // assessTravelRisk renders as a structured card
                     if (toolPart.toolName === 'assessTravelRisk') {
-                      if (!toolPart.input || toolPart.state === 'input-streaming') {
+                      if (toolPart.state === 'input-streaming' || toolPart.state === 'input-available') {
                         return (
                           <div key={i} className="my-4 flex items-center gap-3 rounded-xl border bg-card p-6 shadow-card">
                             <Loader2 className="h-5 w-5 animate-spin text-accent" />
@@ -126,11 +149,29 @@ const TravelCheck = () => {
                         );
                       }
 
-                      return (
-                        <div key={i} className="my-4">
-                          <TravelResponseCard response={toolPart.input as TravelResponse} />
-                        </div>
-                      );
+                      if (toolPart.state === 'output-available' && toolPart.output) {
+                        return (
+                          <div key={i} className="my-4">
+                            <TravelResponseCard response={toolPart.output as TravelResponse} />
+                          </div>
+                        );
+                      }
+                    }
+
+                    // semanticSearch and queryDatabase show a searching indicator
+                    if (toolPart.toolName === 'semanticSearch' || toolPart.toolName === 'queryDatabase') {
+                      if (toolPart.state !== 'output-available') {
+                        return (
+                          <div key={i} className="my-4 flex items-center gap-3 rounded-xl border bg-card p-4 shadow-card">
+                            <Loader2 className="h-4 w-4 animate-spin text-accent" />
+                            <span className="text-sm text-muted-foreground">
+                              {toolPart.toolName === 'semanticSearch' ? 'Searching USCIS content...' : 'Querying database...'}
+                            </span>
+                          </div>
+                        );
+                      }
+                      // Hide the tool part once output is available — the model's text response follows
+                      return null;
                     }
                   }
 

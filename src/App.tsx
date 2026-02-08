@@ -11,11 +11,13 @@ import AuthPage from "./pages/AuthPage";
 import AppDashboard from "./pages/AppDashboard";
 import NotFound from "./pages/NotFound";
 import { ProtectedRoute } from "./components/ProtectedRoute";
+import { UserProfileProvider } from "./contexts/UserProfileContext";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
+    <UserProfileProvider>
     <TooltipProvider>
       <Toaster />
       <Sonner />
@@ -39,6 +41,7 @@ const App = () => (
         </Routes>
       </BrowserRouter>
     </TooltipProvider>
+    </UserProfileProvider>
   </QueryClientProvider>
 );
 

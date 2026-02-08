@@ -16,16 +16,20 @@ export default async function handler(req, res) {
 
   try {
     const { query, limit = 5, table = "chunks" } = req.body;
+    console.log("[semantic-search] query:", query?.slice(0, 100), "table:", table, "limit:", limit);
+    console.log("[semantic-search] OPENAI_API_KEY set:", !!process.env.OPENAI_API_KEY);
 
     if (!query) {
       return res.status(400).json({ error: "Missing query parameter" });
     }
 
     // Generate embedding for the query using OpenAI (matches existing 1536-dim vectors)
+    console.log("[semantic-search] Generating embedding...");
     const { embedding } = await embed({
       model: openai.embedding("text-embedding-ada-002"),
       value: query,
     });
+    console.log("[semantic-search] Embedding generated, dimensions:", embedding.length);
 
     // Format embedding as pgvector literal
     const vectorLiteral = `[${embedding.join(",")}]`;

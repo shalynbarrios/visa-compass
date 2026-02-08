@@ -7,6 +7,7 @@ export default async function handler(req, res) {
 
   try {
     const { action, sql, params = [], tableName } = req.body;
+    console.log("[db-query] action:", action, "sql:", sql?.slice(0, 200), "tableName:", tableName);
 
     // Validate action
     if (!action) {
@@ -41,9 +42,10 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: `Unknown action: ${action}` });
     }
 
+    console.log("[db-query] Success. Row count:", result?.rows?.length ?? result?.length ?? "N/A");
     return res.status(200).json(result);
   } catch (error) {
-    console.error('Database query error:', error);
+    console.error('[db-query] Error:', error.message);
     return res.status(500).json({ error: 'Internal server error', details: error.message });
   }
 }
