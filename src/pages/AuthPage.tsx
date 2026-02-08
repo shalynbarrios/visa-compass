@@ -34,7 +34,7 @@ const AuthPage = () => {
         <div className="w-full max-w-md">
           <div className="text-center mb-8">
             <h1 className="font-serif text-3xl font-bold text-foreground mb-2">
-              Welcome to SourceControl
+              Welcome to Hawkeye
             </h1>
             <p className="text-muted-foreground">
               Sign in or create an account to continue
